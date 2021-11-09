@@ -11,7 +11,7 @@
     "publisher": "Expanse",
     "license": "Copyright (c) Expanse, 2020",
     "app_version": "1.0.0",
-    "python_version" : "3",
+    "python_version": "3",
     "utctime_updated": "2020-04-08T16:11:16.683577Z",
     "package_name": "phantom_expanse",
     "main_module": "expanse_connector.py",
@@ -59,22 +59,22 @@
                     "data_path": "action_result.status",
                     "data_type": "string",
                     "example_values": [
-                      "success",
-                      "failed"
-                  ]
+                        "success",
+                        "failed"
+                    ]
                 },
                 {
                     "data_path": "summary.total_objects",
                     "data_type": "numeric",
                     "example_values": [
-                      1
+                        1
                     ]
                 },
                 {
                     "data_path": "summary.total_objects_successful",
                     "data_type": "numeric",
                     "example_values": [
-                      1
+                        1
                     ]
                 },
                 {
@@ -124,7 +124,7 @@
                     "data_path": "action_result.data.0.data.*.modified",
                     "data_type": "string",
                     "column_name": "Modified",
-                    "column_order": 5 
+                    "column_order": 5
                 },
                 {
                     "data_path": "action_result.data.0.data.*.responsiveIpCount",
@@ -204,22 +204,22 @@
                     "data_path": "action_result.status",
                     "data_type": "string",
                     "example_values": [
-                      "success",
-                      "failed"
-                  ]
+                        "success",
+                        "failed"
+                    ]
                 },
                 {
                     "data_path": "summary.total_objects",
                     "data_type": "numeric",
                     "example_values": [
-                      1
+                        1
                     ]
                 },
                 {
                     "data_path": "summary.total_objects_successful",
                     "data_type": "numeric",
                     "example_values": [
-                      1
+                        1
                     ]
                 },
                 {
@@ -332,22 +332,22 @@
                     "data_path": "action_result.status",
                     "data_type": "string",
                     "example_values": [
-                      "success",
-                      "failed"
-                  ]
+                        "success",
+                        "failed"
+                    ]
                 },
                 {
                     "data_path": "summary.total_objects",
                     "data_type": "numeric",
                     "example_values": [
-                      1
+                        1
                     ]
                 },
                 {
                     "data_path": "summary.total_objects_successful",
                     "data_type": "numeric",
                     "example_values": [
-                      1
+                        1
                     ]
                 },
                 {
@@ -476,22 +476,22 @@
                     "data_path": "action_result.status",
                     "data_type": "string",
                     "example_values": [
-                      "success",
-                      "failed"
-                  ]
+                        "success",
+                        "failed"
+                    ]
                 },
                 {
                     "data_path": "summary.total_objects",
                     "data_type": "numeric",
                     "example_values": [
-                      1
+                        1
                     ]
                 },
                 {
                     "data_path": "summary.total_objects_successful",
                     "data_type": "numeric",
                     "example_values": [
-                      1
+                        1
                     ]
                 },
                 {
@@ -582,5 +582,37 @@
             },
             "versions": "EQ(*)"
         }
-    ]
+    ],
+    "pip_dependencies": {
+        "wheel": [
+            {
+                "module": "beautifulsoup4",
+                "input_file": "wheels/beautifulsoup4-4.9.1-py3-none-any.whl"
+            },
+            {
+                "module": "certifi",
+                "input_file": "wheels/certifi-2021.10.8-py2.py3-none-any.whl"
+            },
+            {
+                "module": "chardet",
+                "input_file": "wheels/chardet-3.0.4-py2.py3-none-any.whl"
+            },
+            {
+                "module": "idna",
+                "input_file": "wheels/idna-2.10-py2.py3-none-any.whl"
+            },
+            {
+                "module": "requests",
+                "input_file": "wheels/requests-2.25.0-py2.py3-none-any.whl"
+            },
+            {
+                "module": "soupsieve",
+                "input_file": "wheels/soupsieve-2.3-py3-none-any.whl"
+            },
+            {
+                "module": "urllib3",
+                "input_file": "wheels/urllib3-1.26.7-py2.py3-none-any.whl"
+            }
+        ]
+    }
 }
