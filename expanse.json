@@ -10,12 +10,12 @@
     "product_version_regex": ".*",
     "publisher": "Expanse",
     "license": "Copyright (c) Expanse, 2020",
-    "app_version": "1.0.1",
+    "app_version": "1.1.0",
     "python_version": "3",
     "utctime_updated": "2021-11-10T01:33:59.000000Z",
     "package_name": "phantom_expanse",
     "main_module": "expanse_connector.py",
-    "min_phantom_version": "4.6.19142",
+    "min_phantom_version": "4.10.0",
     "app_wizard_version": "1.0.0",
     "configuration": {
         "Token": {
