@@ -182,8 +182,7 @@ class ExpanseConnector(BaseConnector):
     def _fetch_jwt(self, config):
         # Returns a new JWT using the included token if a no valid JWT exists
         self._token = config.get("Token")
-        if self._jwt is not None or \
-            (self._state.get('jwt') is not None and self._state.get('jwt_exp') is not None):
+        if self._jwt is not None or (self._state.get('jwt') is not None and self._state.get('jwt_exp') is not None):
             # JWT exists and may be valid
             if self._jwt is not None:
                 # should be fresh
@@ -225,7 +224,8 @@ class ExpanseConnector(BaseConnector):
         r = requests.get("{}/api/v1/idtoken".format(
             self._base_url),
             headers=headers,
-            verify=config.get('verify_server_cert', False)
+            verify=config.get('verify_server_cert', False),
+            timeout=30
         )
         if r.status_code == STATUS_CODE_200:
             jwt = r.json().get("token")
