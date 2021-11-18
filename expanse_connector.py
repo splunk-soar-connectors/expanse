@@ -217,6 +217,7 @@ class ExpanseConnector(BaseConnector):
             )
 
     def _request_new_jwt(self):
+        config = self.get_config()
         headers = {
             "User-Agent": EXPANSE_USER_AGENT,
             "Authorization": "Bearer {}".format(self._token),
@@ -224,7 +225,8 @@ class ExpanseConnector(BaseConnector):
         }
         r = requests.get("{}/api/v1/idtoken".format(
             self._base_url),
-            headers=headers
+            headers=headers,
+            verify=config.get('verify_server_cert', False)
         )
         if r.status_code == STATUS_CODE_200:
             jwt = r.json().get("token")
