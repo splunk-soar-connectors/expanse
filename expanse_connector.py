@@ -183,8 +183,7 @@ class ExpanseConnector(BaseConnector):
         # Returns a new JWT using the included token if a no valid JWT exists
         self._token = config.get("Token")
         if self._jwt is not None or \
-            (self._state.get('jwt') is not None
-                and self._state.get('jwt_exp') is not None):
+            (self._state.get('jwt') is not None and self._state.get('jwt_exp') is not None):
             # JWT exists and may be valid
             if self._jwt is not None:
                 # should be fresh
@@ -210,7 +209,7 @@ class ExpanseConnector(BaseConnector):
                 self.save_progress(
                     "Auth setup failed, expect downstream failure - {}".format(
                         request_exception)
-                    )
+                )
         else:
             self.save_progress(
                 "No JWT or Refresh token found, expect downstream failure."
