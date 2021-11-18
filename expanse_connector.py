@@ -17,19 +17,18 @@
 # Python 3 Compatibility imports
 from __future__ import print_function, unicode_literals
 
+import base64
+import json
+from datetime import datetime, timedelta
+
 # Phantom App imports
 import phantom.app as phantom
-from phantom.base_connector import BaseConnector
-from phantom.action_result import ActionResult
-
-from expanse_consts import STATUS_CODE_200, EXPANSE_USER_AGENT, \
-    JSON_CONTENT_TYPE, IP_LOOKUP_INCLUDE_PARAMS
-
-import base64
 import requests
-from datetime import datetime, timedelta
-import json
 from bs4 import BeautifulSoup
+from phantom.action_result import ActionResult
+from phantom.base_connector import BaseConnector
+
+from expanse_consts import EXPANSE_USER_AGENT, IP_LOOKUP_INCLUDE_PARAMS, JSON_CONTENT_TYPE, STATUS_CODE_200
 
 
 class RetVal(tuple):
@@ -457,8 +456,9 @@ class ExpanseConnector(BaseConnector):
 
 
 def main():
-    import pudb
     import argparse
+
+    import pudb
 
     pudb.set_trace()
 
