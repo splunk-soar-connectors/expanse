@@ -28,7 +28,7 @@ from bs4 import BeautifulSoup
 from phantom.action_result import ActionResult
 from phantom.base_connector import BaseConnector
 
-from expanse_consts import EXPANSE_USER_AGENT, IP_LOOKUP_INCLUDE_PARAMS, JSON_CONTENT_TYPE, STATUS_CODE_200
+from expanse_consts import *
 
 
 class RetVal(tuple):
@@ -49,14 +49,40 @@ class ExpanseConnector(BaseConnector):
         self._token = None
         self._jwt = None
 
+    def _get_error_message_from_exception(self, e):
+        """
+        Get appropriate error message from the exception.
+        :param e: Exception object
+        :return: error message
+        """
+        error_code = None
+        error_msg = ERR_MSG_UNAVAILABLE
+
+        try:
+            if hasattr(e, "args"):
+                if len(e.args) > 1:
+                    error_code = e.args[0]
+                    error_msg = e.args[1]
+                elif len(e.args) == 1:
+                    error_msg = e.args[0]
+        except:
+            pass
+
+        if not error_code:
+            error_text = f"Error Message: {error_msg}"
+        else:
+            error_text = f"Error Code: {error_code}. Error Message: {error_code}"
+
+        return error_text
+
     def _process_empty_response(self, response, action_result):
-        if response.status_code == STATUS_CODE_200:
+        if response.status_code in [STATUS_CODE_200, STATUS_CODE_204]:
             return RetVal(phantom.APP_SUCCESS, {})
 
         return RetVal(
             action_result.set_status(
                 phantom.APP_ERROR,
-                "Empty response and no information in the header"
+                f"Status Code: {response.status_code}. Empty response and no information in the header."
             ), None
         )
 
@@ -66,6 +92,9 @@ class ExpanseConnector(BaseConnector):
 
         try:
             soup = BeautifulSoup(response.text, "html.parser")
+            # Remove the script, style, footer and navigation part from the HTML message
+            for element in soup(["script", "style", "footer", "nav"]):
+                element.extract()
             error_text = soup.text
             split_lines = error_text.split('\n')
             split_lines = [x.strip() for x in split_lines if x.strip()]
@@ -73,24 +102,24 @@ class ExpanseConnector(BaseConnector):
         except Exception:
             error_text = "Cannot parse error details"
 
-        message = "Status Code: {0}. Data from server:\n{1}\n".format(
-            status_code,
-            error_text
-        )
+        if not error_text:
+            error_text = "Empty response and no information received"
 
-        message = message.replace(u'{', '{{').replace(u'}', '}}')
-        return RetVal(action_result.set_status(phantom.APP_ERROR, message),
-                      None)
+        message = f"Status Code: {status_code}. Data from server: {error_text}"
+        message = message.replace('{', '{{').replace('}', '}}')
+
+        return RetVal(action_result.set_status(phantom.APP_ERROR, message), None)
 
     def _process_json_response(self, response, action_result):
         # Try a json parse
         try:
             resp_json = response.json()
         except Exception as e:
+            error_msg = self._get_error_message_from_exception(e)
             return RetVal(
                 action_result.set_status(
                     phantom.APP_ERROR,
-                    "Unable to parse JSON response. Error: {0}".format(str(e))
+                    f"Unable to parse JSON response. Error: {error_msg}"
                 ), None
             )
 
@@ -99,21 +128,18 @@ class ExpanseConnector(BaseConnector):
             return RetVal(phantom.APP_SUCCESS, resp_json)
 
         # You should process the error returned in the json
-        message = \
-            "Error from server. Status Code: {0} Data from server: {1}".format(
-                response.status_code,
-                response.text.replace(u'{', '{{').replace(u'}', '}}')
-            )
+        message = "Error from server. Status Code: {0} Data from server: {1}".format(
+            response.status_code,
+            response.text.replace('{', '{{').replace('}', '}}')
+        )
 
-        return RetVal(action_result.set_status(phantom.APP_ERROR, message),
-                      None)
+        return RetVal(action_result.set_status(phantom.APP_ERROR, message), None)
 
     def _process_response(self, response, action_result):
         # store the r_text in debug data
         # it will get dumped in the logs if the action fails
         if hasattr(action_result, 'add_debug_data'):
-            action_result.add_debug_data({'r_status_code':
-                                          response.status_code})
+            action_result.add_debug_data({'r_status_code': response.status_code})
             action_result.add_debug_data({'r_text': response.text})
             action_result.add_debug_data({'r_headers': response.headers})
 
@@ -136,14 +162,12 @@ class ExpanseConnector(BaseConnector):
 
         # everything else is actually an error at this point
         else:
-            message = \
-                "Can't process response from server. \
-                    Status Code: {0} Data from server: {1}".format(
-                    response.status_code,
-                    response.text.replace('{', '{{').replace('}', '}}')
-                )
-        return RetVal(action_result.set_status(phantom.APP_ERROR, message),
-                      None)
+            message = "Can't process response from server. Status Code: {0} Data from server: {1}".format(
+                response.status_code,
+                response.text.replace('{', '{{').replace('}', '}}')
+            )
+
+        return RetVal(action_result.set_status(phantom.APP_ERROR, message), None)
 
     def _make_rest_call(self, endpoint, action_result, method="get", **kwargs):
 
@@ -154,13 +178,12 @@ class ExpanseConnector(BaseConnector):
             request_func = getattr(requests, method)
         except AttributeError:
             return RetVal(
-                action_result.set_status(phantom.APP_ERROR,
-                                         "Invalid method: {0}".format(method)),
+                action_result.set_status(phantom.APP_ERROR, f"Invalid method: {method}"),
                 resp_json
             )
 
         # Create a URL to connect to
-        url = self._base_url + endpoint
+        url = f"{self._base_url}{endpoint}"
 
         try:
             r = request_func(
@@ -169,25 +192,25 @@ class ExpanseConnector(BaseConnector):
                 **kwargs
             )
         except Exception as e:
+            error_msg = self._get_error_message_from_exception(e)
             return RetVal(
                 action_result.set_status(
                     phantom.APP_ERROR,
-                    "Error Connecting to server. Details: {0}".format(str(e))
+                    f"Error Connecting to server. Details: {error_msg}"
                 ), resp_json
             )
 
         return self._process_response(r, action_result)
 
-    def _fetch_jwt(self, config):
+    def _fetch_jwt(self, action_result, config):
         # Returns a new JWT using the included token if a no valid JWT exists
         self._token = config.get("Token")
         if self._jwt is not None or (self._state.get('jwt') is not None and self._state.get('jwt_exp') is not None):
             # JWT exists and may be valid
             if self._jwt is not None:
                 # should be fresh
-                return self._jwt
-            if self._state.get('jwt') is not None \
-                    and self._state.get('jwt_exp') is not None:
+                return phantom.APP_SUCCESS, self._jwt
+            if self._state.get('jwt') is not None and self._state.get('jwt_exp') is not None:
                 # check if jwt ts is less than 2 hour, if not, renew
                 now_epoch = int(datetime.today().strftime('%s'))
                 if now_epoch > self._state.get('jwt_exp'):
@@ -195,83 +218,83 @@ class ExpanseConnector(BaseConnector):
                     self._jwt = None
                     del self._state['jwt']
                     del self._state['jwt_exp']
-                    return self._fetch_jwt(config)
+                    return self._fetch_jwt(action_result, config)
                 else:
                     self._jwt = self._state.get('jwt')
-                    return self._jwt
+                    return phantom.APP_SUCCESS, self._jwt
         elif self._token is not None:
             # JWT does not exist, but we can generate a new one
             try:
-                return self._request_new_jwt()
-            except requests.RequestException as request_exception:
-                self.save_progress(
-                    "Auth setup failed, expect downstream failure - {}".format(
-                        request_exception)
-                )
+                return self._request_new_jwt(action_result)
+            except Exception as e:
+                error_msg = self._get_error_message_from_exception(e)
+                return action_result.set_status(
+                    phantom.APP_ERROR,
+                    f"Auth setup failed, expect downstream failure. Details: {error_msg}"
+                ), None
         else:
-            self.save_progress(
-                "No JWT or Refresh token found, expect downstream failure."
-            )
+            return action_result.set_status(phantom.APP_ERROR, "No JWT or Refresh token found, expect downstream failure"), None
 
-    def _request_new_jwt(self):
+    def _request_new_jwt(self, action_result):
         config = self.get_config()
         headers = {
             "User-Agent": EXPANSE_USER_AGENT,
-            "Authorization": "Bearer {}".format(self._token),
+            "Authorization": f"Bearer {self._token}",
             "Content-Type": JSON_CONTENT_TYPE,
         }
-        r = requests.get("{}/api/v1/idtoken".format(
-            self._base_url),
-            headers=headers,
-            verify=config.get('verify_server_cert', False),
-            timeout=30
-        )
+        endpoint = f"{self._base_url}/api/v1/idtoken"
+        r = requests.get(endpoint, headers=headers, verify=config.get('verify_server_cert', False), timeout=30)
         if r.status_code == STATUS_CODE_200:
             jwt = r.json().get("token")
             if jwt is not None:
                 self._jwt = jwt
                 self._state['jwt'] = jwt
-                self._state['jwt_exp'] = self._decode_jwt(jwt)['exp']
-                return jwt
+                ret_val, decoded_jwt = self._decode_jwt(action_result, jwt)
+                if phantom.is_fail(ret_val):
+                    return action_result.get_status(), None
+                self._state['jwt_exp'] = decoded_jwt['exp']
+                return phantom.APP_SUCCESS, jwt
             else:
-                self.save_progress(
-                    "Invalid response returned when refreshing JWT."
-                )
+                return action_result.set_status(
+                    phantom.APP_ERROR,
+                    "Invalid response returned from server when refreshing JWT"
+                ), None
         else:
-            self.save_progress(
-                "Invalid response returned from server when refreshing JWT."
-            )
+            return action_result.set_status(
+                phantom.APP_ERROR,
+                "Invalid response returned from server when refreshing JWT"
+            ), None
 
-    def _decode_jwt(self, token):
+    def _decode_jwt(self, action_result, token):
         # Uses based64 to decode a jwt to get expire timestamp
         parts = token.split('.')
         if len(parts) != 3:
             # Invalid JWT
-            self.save_progress("Invalid JWT token returned from server")
-            return
+            return action_result.set_status(phantom.APP_ERROR, "Invalid JWT token returned from server"), None
         # this is to avoid Incorrect padding TypeErrors in the base64 module
-        padded_payload = parts[1] + '==='
+        padded_payload = f"{parts[1]}==="
         try:
-            return json.loads(
-                base64.b64decode(
-                    padded_payload.replace('-', '+').replace('_', '/')
-                )
+            return phantom.APP_SUCCESS, json.loads(
+                base64.b64decode(padded_payload.replace('-', '+').replace('_', '/'))
             )
         except TypeError:
-            self.save_progress("Invalid JWT token returned from server")
+            return action_result.set_status(phantom.APP_ERROR, "Invalid JWT token returned from server"), None
 
     def _get_headers(self, jwt):
         return {
             "User-Agent": EXPANSE_USER_AGENT,
             "Content-Type": JSON_CONTENT_TYPE,
-            "Authorization": "JWT {}".format(jwt)
+            "Authorization": f"JWT {jwt}"
         }
 
     def _handle_test_connectivity(self, param):
         action_result = self.add_action_result(ActionResult(dict(param)))
 
         config = self.get_config()
-        jwt = self._fetch_jwt(config)
+        ret_val, jwt = self._fetch_jwt(action_result, config)
+        if phantom.is_fail(ret_val):
+            self.save_progress("Test Connectivity Failed")
+            return action_result.get_status()
 
         self.save_progress("Connecting to endpoint")
         ret_val, response = self._make_rest_call(
@@ -282,7 +305,7 @@ class ExpanseConnector(BaseConnector):
         )
 
         if phantom.is_fail(ret_val):
-            self.save_progress("Test Connectivity Failed.")
+            self.save_progress("Test Connectivity Failed")
             return action_result.get_status()
 
         # Return success
@@ -291,21 +314,21 @@ class ExpanseConnector(BaseConnector):
 
     def _handle_lookup_ip(self, param):
         config = self.get_config()
-        jwt = self._fetch_jwt(config)
 
-        self.save_progress(
-            "In action handler for: {0}".format(self.get_action_identifier())
-        )
+        self.save_progress(f"In action handler for: {self.get_action_identifier()}")
 
         action_result = self.add_action_result(ActionResult(dict(param)))
+
+        ret_val, jwt = self._fetch_jwt(action_result, config)
+        if phantom.is_fail(ret_val):
+            return action_result.get_status()
 
         ip = param['ip']
 
         ret_val, response = self._make_rest_call(
             '/api/v2/ip-range',
             action_result,
-            params={"include": IP_LOOKUP_INCLUDE_PARAMS,
-                    "inet": ip},
+            params={"include": IP_LOOKUP_INCLUDE_PARAMS, "inet": ip},
             headers=self._get_headers(jwt)
         )
 
@@ -315,27 +338,27 @@ class ExpanseConnector(BaseConnector):
         action_result.add_data(response)
 
         summary = action_result.update_summary({})
-        summary['data'] = response['data']
+        summary['data'] = response.get('data')
 
         # Improve severity stats
-        if len(response['data']) > 0:
+        if len(response.get('data', [])) > 0:
             if len(response['data'][0].get('severityCounts', [])) > 0:
                 sev_counts = {}
-                for cts in response['data'][0].get('severityCounts'):
-                    sev_counts[cts['type']] = cts['count']
+                for cts in response['data'][0].get('severityCounts', []):
+                    sev_counts[cts['type']] = cts.get('count')
                 summary['data'][0]['severity_counts'] = sev_counts
 
         return action_result.set_status(phantom.APP_SUCCESS)
 
     def _handle_lookup_domain(self, param):
         config = self.get_config()
-        jwt = self._fetch_jwt(config)
 
-        self.save_progress(
-            "In action handler for: {0}".format(self.get_action_identifier())
-        )
+        self.save_progress(f"In action handler for: {self.get_action_identifier()}")
 
         action_result = self.add_action_result(ActionResult(dict(param)))
+        ret_val, jwt = self._fetch_jwt(action_result, config)
+        if phantom.is_fail(ret_val):
+            return action_result.get_status()
 
         domain = param['domain']
 
@@ -352,19 +375,19 @@ class ExpanseConnector(BaseConnector):
         action_result.add_data(response)
 
         summary = action_result.update_summary({})
-        summary['data'] = response['data']
+        summary['data'] = response.get('data')
 
         return action_result.set_status(phantom.APP_SUCCESS)
 
     def _handle_lookup_certificate(self, param):
         config = self.get_config()
-        jwt = self._fetch_jwt(config)
 
-        self.save_progress(
-            "In action handler for: {0}".format(self.get_action_identifier())
-        )
+        self.save_progress(f"In action handler for: {self.get_action_identifier()}")
 
         action_result = self.add_action_result(ActionResult(dict(param)))
+        ret_val, jwt = self._fetch_jwt(action_result, config)
+        if phantom.is_fail(ret_val):
+            return action_result.get_status()
 
         common_name = param['common_name']
 
@@ -381,31 +404,34 @@ class ExpanseConnector(BaseConnector):
         action_result.add_data(response)
 
         summary = action_result.update_summary({})
-        summary['data'] = response['data']
+        summary['data'] = response.get('data')
 
         return action_result.set_status(phantom.APP_SUCCESS)
 
     def _handle_lookup_behavior(self, param):
         config = self.get_config()
-        jwt = self._fetch_jwt(config)
 
-        self.save_progress(
-            "In action handler for: {0}".format(self.get_action_identifier())
-        )
+        self.save_progress(f"In action handler for: {self.get_action_identifier()}")
 
         action_result = self.add_action_result(ActionResult(dict(param)))
+        ret_val, jwt = self._fetch_jwt(action_result, config)
+        if phantom.is_fail(ret_val):
+            return action_result.get_status()
 
         ip = param['ip']
 
-        start_date = datetime.strftime(datetime.today() - timedelta(days=30),
-                                       "%Y-%m-%d")
+        start_date = datetime.strftime(datetime.today() - timedelta(days=30), "%Y-%m-%d")
+
+        params = {
+            "filter[created-after]": f"{start_date}T00:00:00.000Z",
+            "filter[internal-ip-range]": ip,
+            "page[limit]": 30
+        }
 
         ret_val, response = self._make_rest_call(
             '/api/v1/behavior/risky-flows',
             action_result,
-            params={"filter[created-after]": start_date + "T00:00:00.000Z",
-                    "filter[internal-ip-range]": ip,
-                    "page[limit]": 30},
+            params=params,
             headers=self._get_headers(jwt)
         )
 
@@ -415,7 +441,7 @@ class ExpanseConnector(BaseConnector):
         action_result.add_data(response)
 
         summary = action_result.update_summary({})
-        summary['data'] = response['data']
+        summary['data'] = response.get('data')
 
         return action_result.set_status(phantom.APP_SUCCESS)
 
@@ -447,6 +473,13 @@ class ExpanseConnector(BaseConnector):
         # Load the state in initialize, use it to store data
         # that needs to be accessed across actions
         self._state = self.load_state()
+        if not isinstance(self._state, dict):
+            self.debug_print("Resetting the state file with the default format")
+            self._state = {
+                "app_version": self.get_app_json().get('app_version')
+            }
+            return self.set_status(phantom.APP_ERROR, EXPANSE_STATE_FILE_CORRUPT_ERR)
+
         return phantom.APP_SUCCESS
 
     def finalize(self):

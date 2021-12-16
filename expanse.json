@@ -15,7 +15,7 @@
     "utctime_updated": "2021-11-10T01:33:59.000000Z",
     "package_name": "phantom_expanse",
     "main_module": "expanse_connector.py",
-    "min_phantom_version": "4.10.0",
+    "min_phantom_version": "5.0.0",
     "app_wizard_version": "1.0.0",
     "configuration": {
         "Token": {
@@ -23,6 +23,12 @@
             "data_type": "password",
             "required": true,
             "order": 0
+        },
+        "verify_server_cert": {
+            "description": "Verify server certificate",
+            "data_type": "boolean",
+            "default": true,
+            "order": 4
         }
     },
     "actions": [

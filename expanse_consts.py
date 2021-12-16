@@ -13,7 +13,16 @@
 # either express or implied. See the License for the specific language governing permissions
 # and limitations under the License.
 STATUS_CODE_200 = 200
+STATUS_CODE_204 = 204
 EXPANSE_USER_AGENT = "Expanse_Phantom/1.0.0"
 JSON_CONTENT_TYPE = "application/json"
-IP_LOOKUP_INCLUDE_PARAMS = "annotations,severityCounts,\
-attributionReasons,relatedRegistrationInformation,locationInformation"
+IP_LOOKUP_INCLUDE_PARAMS = "annotations,severityCounts,attributionReasons,relatedRegistrationInformation,locationInformation"
+
+# Constants relating to 'get_error_message_from_exception'
+ERR_MSG_UNAVAILABLE = "Error message unavailable. Please check the asset configuration and|or action parameters."
+
+# Constants relating to error messages
+EXPANSE_STATE_FILE_CORRUPT_ERR = (
+    "Error occurred while loading the state file due to its unexpected format. "
+    "Resetting the state file with the default format. Please try again."
+)
