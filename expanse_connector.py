@@ -18,6 +18,7 @@
 from __future__ import print_function, unicode_literals
 
 import base64
+import ipaddress
 import json
 from datetime import datetime, timedelta
 
@@ -74,6 +75,21 @@ class ExpanseConnector(BaseConnector):
             error_text = f"Error Code: {error_code}. Error Message: {error_code}"
 
         return error_text
+
+    def _is_ip(self, input_ip_address):
+        """
+        Function that checks given address and returns True if address is valid IPv4 or IPV6 address.
+
+        :param input_ip_address: IP address
+        :return: status (success/failure)
+        """
+
+        try:
+            ipaddress.ip_address(input_ip_address)
+        except Exception:
+            return False
+
+        return True
 
     def _process_empty_response(self, response, action_result):
         if response.status_code in [STATUS_CODE_200, STATUS_CODE_204]:
@@ -479,6 +495,9 @@ class ExpanseConnector(BaseConnector):
                 "app_version": self.get_app_json().get('app_version')
             }
             return self.set_status(phantom.APP_ERROR, EXPANSE_STATE_FILE_CORRUPT_ERR)
+
+        # Custom validator for IP address
+        self.set_validator("ip", self._is_ip)
 
         return phantom.APP_SUCCESS
 
