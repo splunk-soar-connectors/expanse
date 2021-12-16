@@ -9,7 +9,7 @@
     "product_name": "Expanse",
     "product_version_regex": ".*",
     "publisher": "Expanse",
-    "license": "Copyright (c) Expanse, 2020",
+    "license": "Copyright (c) Expanse, 2020-2021",
     "app_version": "1.1.0",
     "python_version": "3",
     "utctime_updated": "2021-11-10T01:33:59.000000Z",
@@ -27,7 +27,7 @@
         "verify_server_cert": {
             "description": "Verify server certificate",
             "data_type": "boolean",
-            "default": true,
+            "default": false,
             "order": 4
         }
     },
