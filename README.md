@@ -1,6 +1,6 @@
 [comment]: # "  File: README.md"
 [comment]: # ""
-[comment]: # "  Copyright (c) 2020-2021 Splunk Inc."
+[comment]: # "  Copyright (c) Expanse, 2020-2021"
 [comment]: # ""
 [comment]: # "  Licensed under the Apache License, Version 2.0 (the \"License\");"
 [comment]: # "  you may not use this file except in compliance with the License."

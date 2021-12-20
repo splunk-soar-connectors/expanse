@@ -17,6 +17,7 @@
     "main_module": "expanse_connector.py",
     "min_phantom_version": "5.0.0",
     "app_wizard_version": "1.0.0",
+    "fips_compliant": true,
     "configuration": {
         "Token": {
             "description": "Token to authenticate API calls",
@@ -28,7 +29,7 @@
             "description": "Verify server certificate",
             "data_type": "boolean",
             "default": false,
-            "order": 4
+            "order": 1
         }
     },
     "actions": [
@@ -633,7 +634,7 @@
             },
             {
                 "module": "soupsieve",
-                "input_file": "wheels/soupsieve-2.3-py3-none-any.whl"
+                "input_file": "wheels/soupsieve-2.3.1-py3-none-any.whl"
             },
             {
                 "module": "urllib3",
