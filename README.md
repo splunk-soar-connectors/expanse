@@ -1,7 +1,7 @@
 # Expanse
 
 Publisher: Expanse \
-Connector Version: 1.1.3 \
+Connector Version: 1.1.4 \
 Product Vendor: Expanse \
 Product Name: Expanse \
 Minimum Product Version: 5.0.0
