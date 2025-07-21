@@ -11,7 +11,7 @@
     "publisher": "Expanse",
     "license": "Copyright (c) Expanse, 2020-2025",
     "app_version": "1.1.4",
-    "python_version": "3",
+    "python_version": ["3.9", "3.13"],
     "utctime_updated": "2025-04-29T21:03:06.778006Z",
     "package_name": "phantom_expanse",
     "main_module": "expanse_connector.py",
