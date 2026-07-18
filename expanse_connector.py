@@ -22,6 +22,7 @@ import json
 from datetime import datetime, timedelta
 
 # Phantom App imports
+import encryption_helper
 import phantom.app as phantom
 import requests
 from bs4 import BeautifulSoup
@@ -212,8 +213,13 @@ class ExpanseConnector(BaseConnector):
                     del self._state["jwt_exp"]
                     return self._fetch_jwt(action_result, config)
                 else:
-                    self._jwt = self._state.get("jwt")
-                    return phantom.APP_SUCCESS, self._jwt
+                    try:
+                        self._jwt = encryption_helper.decrypt(self._state.get("jwt"), self.get_asset_id())
+                        return phantom.APP_SUCCESS, self._jwt
+                    except Exception:
+                        self._state.pop("jwt", None)
+                        self._state.pop("jwt_exp", None)
+                        return self._fetch_jwt(action_result, config)
         elif self._token is not None:
             # JWT does not exist, but we can generate a new one
             try:
@@ -237,7 +243,7 @@ class ExpanseConnector(BaseConnector):
             jwt = r.json().get("token")
             if jwt is not None:
                 self._jwt = jwt
-                self._state["jwt"] = jwt
+                self._state["jwt"] = encryption_helper.encrypt(jwt, self.get_asset_id())
                 ret_val, decoded_jwt = self._decode_jwt(action_result, jwt)
                 if phantom.is_fail(ret_val):
                     return action_result.get_status(), None
