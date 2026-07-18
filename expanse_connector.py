@@ -187,7 +187,7 @@ class ExpanseConnector(BaseConnector):
         url = f"{self._base_url}{endpoint}"
 
         try:
-            r = request_func(url, verify=config.get("verify_server_cert", False), **kwargs)
+            r = request_func(url, verify=config.get("verify_server_cert", True), **kwargs)
         except Exception as e:
             error_msg = self._get_error_message_from_exception(e)
             return RetVal(action_result.set_status(phantom.APP_ERROR, f"Error Connecting to server. Details: {error_msg}"), resp_json)
@@ -232,7 +232,7 @@ class ExpanseConnector(BaseConnector):
             "Content-Type": JSON_CONTENT_TYPE,
         }
         endpoint = f"{self._base_url}/api/v1/idtoken"
-        r = requests.get(endpoint, headers=headers, verify=config.get("verify_server_cert", False), timeout=30)
+        r = requests.get(endpoint, headers=headers, verify=config.get("verify_server_cert", True), timeout=30)
         if r.status_code == STATUS_CODE_200:
             jwt = r.json().get("token")
             if jwt is not None:
