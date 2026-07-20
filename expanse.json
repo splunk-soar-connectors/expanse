@@ -9,9 +9,9 @@
     "product_name": "Expanse",
     "product_version_regex": ".*",
     "publisher": "Expanse",
-    "license": "Copyright (c) Expanse, 2020-2025",
+    "license": "Copyright (c) Expanse, 2020-2026",
     "app_version": "1.1.4",
-    "python_version": "3",
+    "python_version": "3.9, 3.13",
     "utctime_updated": "2025-04-29T21:03:06.778006Z",
     "package_name": "phantom_expanse",
     "main_module": "expanse_connector.py",
@@ -28,7 +28,7 @@
         "verify_server_cert": {
             "description": "Verify server certificate",
             "data_type": "boolean",
-            "default": false,
+            "default": true,
             "order": 1
         }
     },
@@ -611,6 +611,14 @@
         }
     ],
     "pip39_dependencies": {
+        "wheel": [
+            {
+                "module": "chardet",
+                "input_file": "wheels/shared/chardet-3.0.4-py2.py3-none-any.whl"
+            }
+        ]
+    },
+    "pip313_dependencies": {
         "wheel": [
             {
                 "module": "chardet",

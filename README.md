@@ -1,9 +1,9 @@
 # Expanse
 
-Publisher: Expanse \
-Connector Version: 1.1.4 \
-Product Vendor: Expanse \
-Product Name: Expanse \
+Publisher: Expanse <br>
+Connector Version: 1.1.4 <br>
+Product Vendor: Expanse <br>
+Product Name: Expanse <br>
 Minimum Product Version: 5.0.0
 
 Expanse allows you to perform enrichment using Expanse's Internet Asset data, including IP, Domain, Certificates, and more
@@ -19,17 +19,17 @@ VARIABLE | REQUIRED | TYPE | DESCRIPTION
 
 ### Supported Actions
 
-[test connectivity](#action-test-connectivity) - Validate the asset configuration for connectivity using supplied configuration \
-[lookup ip](#action-lookup-ip) - Check for the presence of an IP within a known IP range in Expanse \
-[lookup domain](#action-lookup-domain) - Check for the presence of a known domain in Expanse \
-[lookup certificate](#action-lookup-certificate) - Returns certificates from Expanse for a full or partial common name \
+[test connectivity](#action-test-connectivity) - Validate the asset configuration for connectivity using supplied configuration <br>
+[lookup ip](#action-lookup-ip) - Check for the presence of an IP within a known IP range in Expanse <br>
+[lookup domain](#action-lookup-domain) - Check for the presence of a known domain in Expanse <br>
+[lookup certificate](#action-lookup-certificate) - Returns certificates from Expanse for a full or partial common name <br>
 [lookup behavior](#action-lookup-behavior) - Returns Expanse behavior data for an IP. Limited to 30 flows within the last 30 days
 
 ## action: 'test connectivity'
 
 Validate the asset configuration for connectivity using supplied configuration
 
-Type: **test** \
+Type: **test** <br>
 Read only: **True**
 
 #### Action Parameters
@@ -44,7 +44,7 @@ No Output
 
 Check for the presence of an IP within a known IP range in Expanse
 
-Type: **investigate** \
+Type: **investigate** <br>
 Read only: **True**
 
 #### Action Parameters
@@ -81,7 +81,7 @@ summary.total_objects_successful | numeric | | 1 |
 
 Check for the presence of a known domain in Expanse
 
-Type: **investigate** \
+Type: **investigate** <br>
 Read only: **True**
 
 #### Action Parameters
@@ -115,7 +115,7 @@ summary.total_objects_successful | numeric | | 1 |
 
 Returns certificates from Expanse for a full or partial common name
 
-Type: **investigate** \
+Type: **investigate** <br>
 Read only: **True**
 
 #### Action Parameters
@@ -153,7 +153,7 @@ summary.total_objects_successful | numeric | | 1 |
 
 Returns Expanse behavior data for an IP. Limited to 30 flows within the last 30 days
 
-Type: **investigate** \
+Type: **investigate** <br>
 Read only: **True**
 
 #### Action Parameters
@@ -187,7 +187,7 @@ ______________________________________________________________________
 
 Auto-generated Splunk SOAR Connector documentation.
 
-Copyright 2025 Splunk Inc.
+Copyright 2026 Splunk Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

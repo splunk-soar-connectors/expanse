@@ -1,6 +1,6 @@
 # File: expanse_connector.py
 #
-# Copyright (c) Expanse, 2020-2025
+# Copyright (c) Expanse, 2020-2026
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import json
 from datetime import datetime, timedelta
 
 # Phantom App imports
+import encryption_helper
 import phantom.app as phantom
 import requests
 from bs4 import BeautifulSoup
@@ -187,7 +188,7 @@ class ExpanseConnector(BaseConnector):
         url = f"{self._base_url}{endpoint}"
 
         try:
-            r = request_func(url, verify=config.get("verify_server_cert", False), **kwargs)
+            r = request_func(url, verify=config.get("verify_server_cert", True), **kwargs)
         except Exception as e:
             error_msg = self._get_error_message_from_exception(e)
             return RetVal(action_result.set_status(phantom.APP_ERROR, f"Error Connecting to server. Details: {error_msg}"), resp_json)
@@ -212,8 +213,13 @@ class ExpanseConnector(BaseConnector):
                     del self._state["jwt_exp"]
                     return self._fetch_jwt(action_result, config)
                 else:
-                    self._jwt = self._state.get("jwt")
-                    return phantom.APP_SUCCESS, self._jwt
+                    try:
+                        self._jwt = encryption_helper.decrypt(self._state.get("jwt"), self.get_asset_id())
+                        return phantom.APP_SUCCESS, self._jwt
+                    except Exception:
+                        self._state.pop("jwt", None)
+                        self._state.pop("jwt_exp", None)
+                        return self._fetch_jwt(action_result, config)
         elif self._token is not None:
             # JWT does not exist, but we can generate a new one
             try:
@@ -232,12 +238,12 @@ class ExpanseConnector(BaseConnector):
             "Content-Type": JSON_CONTENT_TYPE,
         }
         endpoint = f"{self._base_url}/api/v1/idtoken"
-        r = requests.get(endpoint, headers=headers, verify=config.get("verify_server_cert", False), timeout=30)
+        r = requests.get(endpoint, headers=headers, verify=config.get("verify_server_cert", True), timeout=30)
         if r.status_code == STATUS_CODE_200:
             jwt = r.json().get("token")
             if jwt is not None:
                 self._jwt = jwt
-                self._state["jwt"] = jwt
+                self._state["jwt"] = encryption_helper.encrypt(jwt, self.get_asset_id())
                 ret_val, decoded_jwt = self._decode_jwt(action_result, jwt)
                 if phantom.is_fail(ret_val):
                     return action_result.get_status(), None
